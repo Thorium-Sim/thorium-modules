@@ -1,0 +1,26 @@
+.DS_Store
+
+# Package Dist
+packages/*/dist
+
+# Logs
+logs
+*.log
+npm-debug.log*
+lerna-debug.log*
+
+# Dependency directories
+node_modules/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# dotenv environment variables file
+.env
+.env.test

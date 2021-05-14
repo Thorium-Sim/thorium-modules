@@ -1,0 +1,23 @@
+{
+  "name": "thorium-modules",
+  "version": "0.0.1",
+  "description": "Modules used for Thorium development",
+  "private": "true",
+  "scripts": {
+    "build": "npm run --workspaces build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Thorium-Sim/thorium-modules.git"
+  },
+  "author": "Alex Anderson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Thorium-Sim/thorium-modules/issues"
+  },
+  "homepage": "https://github.com/Thorium-Sim/thorium-modules#readme",
+  "workspaces": [
+    "packages/*"
+  ]
+}

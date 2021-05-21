@@ -2,8 +2,7 @@ import type {ComponentDefinition as ECSComponent, System as ECSSystem} from '@th
 export interface CardProps {}
 export interface CoreProps {}
 export interface ConfigProps {}
-export interface NetSendCommand {
-  type: string;
+export interface NetSendInput {
   [params: string]: unknown;
 }
 export interface NetSendResult {
@@ -12,9 +11,9 @@ export interface NetSendResult {
 export interface PluginAPI {
   registerCard(name: string, component: React.ComponentType<CardProps>): void;
   registerCore(name: string, component: React.ComponentType<CoreProps>): void;
-  registerCommand(
-    type: string,
-    action: (command: NetSendCommand) => NetSendResult
+  registerEvent(
+    inputType: string,
+    eventHandler: (command: NetSendInput) => NetSendResult
   ): void;
   registerComponent(name: string, component: ECSComponent): void;
   registerSystem(name: string, system: ECSSystem): void;
@@ -25,7 +24,7 @@ export interface PluginAPI {
 }
 export interface ThoriumAPI {
   plugin: PluginAPI;
-  netSend(command: NetSendCommand): NetSendResult;
+  netSend(command: NetSendInput): NetSendResult;
 }
 
 declare global {

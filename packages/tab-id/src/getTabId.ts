@@ -44,6 +44,9 @@ async function timeout<T>(callback: () => T, timer: number): Promise<T> {
   await new Promise(resolve => setTimeout(resolve, timer));
   return callback();
 }
+export function getTabIdSync() {
+  return tabId;
+}
 export async function getTabId() {
   if (tabId) {
     return tabId;

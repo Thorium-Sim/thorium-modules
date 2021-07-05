@@ -32,11 +32,11 @@ let synchronizer2 = {};
 
 const synchronizer1 = createSynchronizer(
   {},
-  { onSendPatches: patches => synchronizer2?.applyPatches(patches) }
+  { onSendPatches: ({ patch }) => synchronizer2?.applyPatches(patches) }
 );
 synchronizer2 = createSynchronizer(
   {},
-  { onSendPatches: patches => synchronizer1?.applyPatches(patches) }
+  { onSendPatches: ({ patch }) => synchronizer1?.applyPatches(patches) }
 );
 
 synchronizer1.numberList = [];
@@ -52,7 +52,7 @@ import { createSynchronizer } from '@thorium-sim/json-patch-synchronizer';
 
 const synchronizer = createSynchronizer(
   {},
-  { maxOperations: 5, onSendPatches: patches => console.log('Patches Sent') }
+  { maxOperations: 5, onSendPatches: () => console.log('Patches Sent') }
 );
 
 // Operation 1
@@ -70,7 +70,7 @@ import { createSynchronizer } from '@thorium-sim/json-patch-synchronizer';
 
 const synchronizer = createSynchronizer(
   {},
-  { maxOperations: 10, throttleTimeMs: 5000 onSendPatches: patches => console.log('Patches Sent') }
+  { maxOperations: 10, throttleTimeMs: 5000 onSendPatches: () => console.log('Patches Sent') }
 );
 
 // Operation 1
@@ -96,11 +96,11 @@ Creates a new synchronizer object, based on the values of the `target` parameter
 
 `onSendPatches` is required; all other options are optional
 
-### onSendPatches `(patches:Operation[]) => void`
+### onSendPatches `<T>({patch, state}:{patch:Operation[], state:T}) => void`
 
 _Required_
 
-This function is called at some point after a mutation is made to the synchronizer object. The patches are based on the JSON Patch specification and come in the following shapes:
+This function is called at some point after a mutation is made to the synchronizer object. The argument includes the patches and the updated state of the object. The patches are based on the JSON Patch specification and come in the following shapes:
 
 ```
 Add: {path:string; op: 'add'; value: T}

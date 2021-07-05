@@ -1,3 +1,4 @@
+import { NetConnectorSocket } from '@thorium-sim/types/dist';
 import {
   JSONMessageReplacer,
   JSONMessageReviver,
@@ -8,15 +9,13 @@ import {
 } from './common';
 import { createEmitter } from './emitter';
 import {
-  ClientEmitterSocket,
-  ClientWebSocket,
   generateUUID,
   isObject,
   randomizedExponentialBackOffTime,
 } from './utils';
 
 export interface ClientOptions {
-  connect: () => ClientWebSocket | ClientEmitterSocket;
+  connect: () => NetConnectorSocket;
   /**
    * Optional parameters, passed through the `payload` field with the `ConnectionInit` message,
    * that the client specifies when establishing a connection with the server. You can use this
@@ -107,20 +106,16 @@ export function createClient({
 }: ClientOptions) {
   const emitter = createEmitter();
   let acknowledged = false;
-  let socket: ClientWebSocket | ClientEmitterSocket | null;
+  let socket: NetConnectorSocket | null = null;
   let reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
   let shouldAttemptReconnect = true;
   let retryCount = retryAttempts || -1;
   function start() {
     socket = connect();
-    if (socket && 'addEventListener' in socket) {
-      socket.addEventListener('open', onOpen);
-      socket.addEventListener('close', onClose);
-      socket.addEventListener('message', onMessage);
-    } else {
-      socket.on('open', onOpen);
-      socket.on('close', onClose);
-      socket.on('message', data => onMessage({ data }));
+    if (socket) {
+      socket.onOpen(onOpen);
+      socket.onClose(onClose);
+      socket.onMessage(onMessage);
     }
   }
   function destroy(code = 2200, reason = 'destroyed') {
@@ -171,14 +166,10 @@ export function createClient({
     [key: string]: (response: SendMessage) => void;
   } = {};
 
-  function onMessage({ data }: { data: string | object }) {
+  function onMessage(data: string) {
     try {
-      let message;
-      if (typeof data === 'string') {
-        message = parseMessage(data, jsonMessageReviver);
-      } else {
-        message = data as SendMessage;
-      }
+      const message = parseMessage(data, jsonMessageReviver);
+
       emitter.emit('message', message);
       if (
         message.type !== MessageType.ConnectionAck &&

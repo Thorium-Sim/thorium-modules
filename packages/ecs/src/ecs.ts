@@ -6,26 +6,32 @@ import Entity from './entity';
 import System from './system';
 import performance from './performance';
 import { fastSplice } from './utils';
-
-class ECS {
+import { Component, ComponentId } from './component';
+import { RNG, createRNG } from '@thorium-sim/rng';
+class ECS<
+  Components extends Record<ComponentId, Component<Record<string, unknown>>>
+> {
   /**
    * Store all entities of the ECS.
    */
-  entities: Entity[] = [];
+  entities: Entity<Components>[] = [];
   /**
    * Store entities which need to be tested at beginning of next tick.
    */
-  entitiesSystemsDirty: Entity[] = [];
+  entitiesSystemsDirty: Entity<Components>[] = [];
   /**
    * Store all systems of the ECS.
    */
-  systems: System[] = [];
+  systems: System<Components>[] = [];
   /**
    * Count how many updates have been done.
    */
   updateCounter = 0;
   lastUpdate = performance.now();
-
+  rng: RNG;
+  constructor(seed: string | number = 'thorium', skip?: number) {
+    this.rng = createRNG(seed, skip);
+  }
   /**
    * Retrieve an entity by id
    */
@@ -41,15 +47,15 @@ class ECS {
   /**
    * Add an entity to the ecs.
    */
-  addEntity(entity: Entity) {
+  addEntity(entity: Entity<Components>) {
     this.entities.push(entity);
     entity.addToECS(this);
   }
   /**
    * Remove an entity from the ecs by reference.
    */
-  removeEntity(entity: Entity) {
-    let index = this.entities.findIndex(e => e.id === entity.id);
+  removeEntity(entity: Entity<Components>) {
+    let index = this.entities.findIndex((e) => e.id === entity.id);
     let entityRemoved = null;
     // if the entity is not found do nothing
     if (index !== -1) {
@@ -82,7 +88,7 @@ class ECS {
   /**
    * Remove an entity from dirty entities by reference.
    */
-  removeEntityIfDirty(entity: Entity) {
+  removeEntityIfDirty(entity: Entity<Components>) {
     let index = this.entitiesSystemsDirty.indexOf(entity);
 
     if (index !== -1) {
@@ -92,7 +98,7 @@ class ECS {
   /**
    * Add a system to the ecs.
    */
-  addSystem(system: System) {
+  addSystem(system: System<Components>) {
     system.ecs = this;
     this.systems.push(system);
 
@@ -106,7 +112,7 @@ class ECS {
   /**
    * Remove a system from the ecs.
    */
-  removeSystem(system: System) {
+  removeSystem(system: System<Components>) {
     let index = this.systems.indexOf(system);
 
     if (index !== -1) {

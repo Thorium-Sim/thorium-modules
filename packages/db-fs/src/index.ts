@@ -48,14 +48,14 @@ function json(
     var stack: any = [],
       keys: any = [];
 
-    const cycleReplacer = function(_key: string, value: any) {
+    const cycleReplacer = function (_key: string, value: any) {
       if (stack[0] === value) return '[Circular ~]';
       return (
         '[Circular ~.' + keys.slice(0, stack.indexOf(value)).join('.') + ']'
       );
     };
 
-    return function(this: any, key: any, value: any) {
+    return function (this: any, key: any, value: any) {
       if (stack.length > 0) {
         var thisPos = stack.indexOf(this);
         ~thisPos ? stack.splice(thisPos + 1) : stack.push(this);
@@ -75,7 +75,7 @@ function isClass(v: any): v is GenericClass {
 
 let isProxy = Symbol('isProxy');
 
-interface StoreObject {
+export interface StoreObject {
   writeFile: (force?: boolean) => Promise<void>;
   removeFile: () => Promise<void>;
   serialize?: Function;
@@ -149,7 +149,7 @@ export default function getStore<G extends object>(options?: IStoreOptions<G>) {
 
       if (Array.isArray(dataObject)) {
         jsonData = json(
-          dataObject.map(o => (o.serialize ? o.serialize() : o)),
+          dataObject.map((o) => (o.serialize ? o.serialize() : o)),
           null,
           indent
         );

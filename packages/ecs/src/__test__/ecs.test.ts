@@ -13,7 +13,7 @@ describe('ECS', () => {
   describe('getEntityById()', () => {
     it('should retrieve an entity by id', () => {
       let ecs = new ECS();
-      let entity = new Entity(123, []);
+      let entity = new Entity(123, {});
 
       ecs.addEntity(entity);
 
@@ -22,7 +22,7 @@ describe('ECS', () => {
   });
 
   describe('update()', () => {
-    let ecs: ECS, entity: Entity, system: System;
+    let ecs: ECS<{}>, entity: Entity<{}>, system: System<{}>;
 
     beforeEach(() => {
       ecs = new ECS();
@@ -30,7 +30,7 @@ describe('ECS', () => {
       system = new System();
     });
 
-    it('should give the elapsed time to update methods', done => {
+    it('should give the elapsed time to update methods', (done) => {
       system.test = () => true;
       system.update = (_entity, elapsed) => {
         expect(typeof elapsed).toBe('number');
@@ -45,7 +45,7 @@ describe('ECS', () => {
   });
 
   describe('addSystem()', () => {
-    let ecs: ECS, entity: Entity, system: System;
+    let ecs: ECS<{}>, entity: Entity<{}>, system: System<{}>;
 
     beforeEach(() => {
       ecs = new ECS();
@@ -82,7 +82,7 @@ describe('ECS', () => {
   });
 
   describe('removeSystem()', () => {
-    let ecs: ECS, entity: Entity, system: System;
+    let ecs: ECS<{}>, entity: Entity<{}>, system: System<{}>;
 
     beforeEach(() => {
       ecs = new ECS();
@@ -120,7 +120,10 @@ describe('ECS', () => {
   });
 
   describe('removeEntity()', () => {
-    let ecs: ECS, entity: Entity, system1: System, system2: System;
+    let ecs: ECS<{}>,
+      entity: Entity<{}>,
+      system1: System<{}>,
+      system2: System<{}>;
 
     beforeEach(() => {
       ecs = new ECS();

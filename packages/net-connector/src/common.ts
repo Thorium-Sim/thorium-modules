@@ -11,13 +11,6 @@ import {
   hasOwnStringProperty,
 } from './utils';
 
-/**
- * The WebSocket sub-protocol.
- *
- * @category Common
- */
-export const THORIUM_SIM_WS_PROTOCOL = 'thorium-sim-transport-ws';
-
 /** @category Common */
 export interface Disposable {
   /** Dispose of the instance and clear up resources. */

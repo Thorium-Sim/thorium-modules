@@ -1,6 +1,3 @@
-export type Component = Record<string, unknown>;
-export type ComponentDefinition = {
-  id: string;
-  getDefaults(): Component;
-};
+export type Component<T extends Record<string, unknown>> = T;
+
 export type ComponentId = string;

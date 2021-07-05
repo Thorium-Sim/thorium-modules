@@ -30,7 +30,7 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "clients",
+  "name": "@thorium-sim/clients",
   "author": "Alex Anderson",
   "module": "dist/clients.esm.js",
   "size-limit": [

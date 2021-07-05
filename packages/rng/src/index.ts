@@ -2,16 +2,21 @@ import prand, { RandomGenerator } from 'pure-rand';
 const maxNum = 0xffffffff;
 
 // Poison the global Math.random to provide a warning in development mode
-if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
-  const oldRandom = globalThis.Math.random;
-  globalThis.Math.random = () => {
-    console.warn(
-      new Error(
-        'Unexpected use of Math.random. To keep the engine is deterministic, you should use the @thorium-sim/rng package to generate random numbers.'
-      )
-    );
-    return oldRandom();
-  };
+export function poisonRandom() {
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    process.env.NODE_ENV !== 'test'
+  ) {
+    const oldRandom = globalThis.Math.random;
+    globalThis.Math.random = () => {
+      console.warn(
+        new Error(
+          'Unexpected use of Math.random. To keep the engine is deterministic, you should use the @thorium-sim/rng package to generate random numbers.'
+        )
+      );
+      return oldRandom();
+    };
+  }
 }
 export { prand };
 
@@ -25,7 +30,7 @@ export function skipN(rng: RNG, num: number): RNG {
   return rng;
 }
 
-interface RNG {
+export interface RNG {
   next: () => number;
   nextInt: (min: number, max: number) => number;
   nextFromList: <T>(list: T[]) => T;

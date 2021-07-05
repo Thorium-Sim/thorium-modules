@@ -2,7 +2,7 @@
  * @module  ecs
  */
 
-import { Component, ComponentDefinition, ComponentId } from './component';
+import { Component, ComponentId } from './component';
 import ECS from './ecs';
 import System from './system';
 import { UIDGenerator, DefaultUIDGenerator } from './uid';
@@ -13,7 +13,9 @@ import { fastSplice } from './utils';
  *
  * @class  Entity
  */
-class Entity {
+class Entity<
+  Components extends Record<ComponentId, Component<Record<string, unknown>>>
+> {
   /**
    * @class Entity
    * @constructor
@@ -26,13 +28,13 @@ class Entity {
    * @param {Array[Component]} [components=[]] An array of initial components.
    */
   id: number;
-  ecs: null | ECS;
-  systems: System[];
+  ecs: null | ECS<Components>;
+  systems: System<Components>[];
   systemsDirty: boolean;
-  components: Record<ComponentId, Component>;
+  components: Partial<Components>;
   constructor(
     idOrUidGenerator?: number | UIDGenerator | null,
-    components: ComponentDefinition[] = []
+    components: Partial<Components> = {} as Components
   ) {
     /**
      * Unique identifier of the entity.
@@ -76,20 +78,16 @@ class Entity {
      *
      * @property {Object} components
      */
-    this.components = {};
+    this.components = {} as Components;
 
     // components initialization
-    for (
-      let i = 0, component: ComponentDefinition;
-      (component = components[i]);
-      i += 1
-    ) {
-      // if a getDefaults method is provided, use it. First because let the
+    for (let component in components) {
+      // Initialize with a function. First because let the
       // runtime allocate the component is way more faster than using a copy
       // function. Secondly because the user may want to provide some kind
       // of logic in components initialization ALTHOUGH these kind of
       // initialization should be done in enter() handler
-      this.components[component.id] = component.getDefaults();
+      this.components[component] = { ...components[component] };
     }
 
     /**
@@ -98,13 +96,24 @@ class Entity {
      */
     this.ecs = null;
   }
+  serialize() {
+    return {
+      id: this.id,
+      components: Object.fromEntries(
+        Object.entries(this.components).map(([key, value]) => {
+          let newValue = value?.serialize?.() || value;
+          return [key, newValue];
+        })
+      ),
+    };
+  }
   /**
    * Set the parent ecs reference.
    *
    * @private
    * @param {ECS} ecs An ECS class instance.
    */
-  addToECS(ecs: ECS) {
+  addToECS(ecs: ECS<Components>) {
     this.ecs = ecs;
     this.setSystemsDirty();
   }
@@ -127,7 +136,7 @@ class Entity {
    * @private
    * @param {System} system The system to add.
    */
-  addSystem(system: System) {
+  addSystem(system: System<Components>) {
     this.systems.push(system);
   }
   /**
@@ -136,7 +145,7 @@ class Entity {
    * @private
    * @param  {System} system The system reference to remove.
    */
-  removeSystem(system: System) {
+  removeSystem(system: System<Components>) {
     let index = this.systems.indexOf(system);
 
     if (index !== -1) {
@@ -152,8 +161,11 @@ class Entity {
    * @param {String} name Attribute name of the component to add.
    * @param {Object} data Component data.
    */
-  addComponent(name: string, data: Component = {}) {
-    this.components[name] = data;
+  addComponent<Name extends keyof Components, Data extends Components[Name]>(
+    name: Name,
+    data?: Data
+  ) {
+    this.components[name] = (data || {}) as Data;
     this.setSystemsDirty();
   }
   /**
@@ -163,7 +175,7 @@ class Entity {
    *
    * @param  {String} name Name of the component to remove.
    */
-  removeComponent(name: string) {
+  removeComponent(name: keyof Components) {
     if (!this.components[name]) {
       return;
     }
@@ -184,17 +196,24 @@ class Entity {
    *   entity.updateComponent('kite', {angle: 90, pos: {y: 1}});
    *   // entity.component.pos is '{vel: 0, angle: 90, pos: {y: 1}}'
    */
-  updateComponent(name: string, data: Record<string, unknown>) {
+  updateComponent<Name extends keyof Components, Data extends Components[Name]>(
+    name: Name,
+    data: Data
+  ) {
     let component = this.components[name];
 
     if (!component) {
       this.addComponent(name, data);
     } else {
-      let keys = Object.keys(data);
-
-      for (let i = 0, key; (key = keys[i]); i += 1) {
-        component[key] = data[key];
-      }
+      // let keys = Object.keys(data);
+      Object.assign(this.components[name], data);
+      // for (
+      //   let i = 0, key;
+      //   (key = keys[i] as keyof Partial<Components>[Name]);
+      //   i += 1
+      // ) {
+      //   component[key] = data[key];
+      // }
     }
   }
   /**
@@ -202,11 +221,16 @@ class Entity {
    *
    * @param  {Object} componentsData Dict of components to update.
    */
-  updateComponents(componentsData: Record<ComponentId, Component>) {
-    let components = Object.keys(componentsData);
+  updateComponents<K extends keyof Components>(
+    componentsData: Partial<Components>
+  ) {
+    let components = Object.keys(componentsData) as K[];
 
-    for (let i = 0, component; (component = components[i]); i += 1) {
-      this.updateComponent(component, componentsData[component]);
+    for (let i = 0, component; (component = components[i] as K); i += 1) {
+      this.updateComponent(
+        component,
+        (componentsData[component] || {}) as Components[K]
+      );
     }
   }
   /**

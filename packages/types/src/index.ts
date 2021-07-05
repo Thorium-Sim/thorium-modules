@@ -1,5 +1,7 @@
 import { EventEmitter } from 'events';
 export * from './thorium';
+export * from './netConnector';
+
 export type StateConstraint = unknown[] | Record<number | string, unknown>;
 export type ActionConstraint = { [key: string]: any; type: string };
 export interface SimulationMachine<S extends StateConstraint, A> {

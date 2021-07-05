@@ -1,6 +1,7 @@
-import { MessageType, THORIUM_SIM_WS_PROTOCOL } from '../src/common';
-import { ServerSocket } from '../src/utils';
+import { NetConnectorSocket } from '@thorium-sim/types';
+import { MessageType } from '../src/common';
 import { makeServer } from '../src/netConnectorServer';
+
 describe('Net Connector Server', () => {
   it('instantiates', async () => {
     const executeFunction = jest.fn();
@@ -18,8 +19,9 @@ describe('Net Connector Server', () => {
       await new Promise(res => setTimeout(res, 100));
       onMessageFunction(JSON.stringify({ type: 'Testing' }));
     }
-    const socket: ServerSocket = {
-      protocol: THORIUM_SIM_WS_PROTOCOL,
+    const socket: NetConnectorSocket = {
+      onOpen: () => {},
+      onClose: () => {},
       send: sendFunction,
       close: closeFunction,
       onMessage,

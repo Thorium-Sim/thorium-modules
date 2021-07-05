@@ -5,14 +5,14 @@ function noop() {}
 
 let isProxy = Symbol('isProxy');
 
-interface SynchronizerOptions {
+interface SynchronizerOptions<T> {
   maxOperations?: number;
-  onSendPatches?: (patch: Operation[]) => void;
+  onSendPatches?: ({ patch, state }: { patch: Operation[]; state: T }) => void;
   throttleTimeMs?: number | null;
 }
 export function createSynchronizer<T extends {}>(
   target: T & { applyPatches?: (patches: Operation[]) => void },
-  options: SynchronizerOptions = {}
+  options: SynchronizerOptions<T> = {}
 ): T & { applyPatches: (patches: Operation[]) => void } {
   let proxy: T;
   let operationCount = 0;
@@ -39,8 +39,8 @@ export function createSynchronizer<T extends {}>(
       runGenerateThrottle.cancel();
       const patch = jsonPatch
         .generate(observer)
-        .filter(patch => patch.path !== '/applyPatches');
-      onSendPatches(patch);
+        .filter((patch) => patch.path !== '/applyPatches');
+      onSendPatches({ patch, state: target });
     }
   }
 

@@ -4,7 +4,7 @@ describe('Entity', () => {
   it('should initialize', () => {
     let entity = new Entity();
 
-    expect(typeof entity.id).toBe('string');
+    expect(typeof entity.id).toBe('number');
   });
 
   it('should have an unique id', () => {
@@ -15,27 +15,18 @@ describe('Entity', () => {
   });
 
   it('should support getDefault components', () => {
-    let entity = new Entity(0, [
-      {
-        id: 'identity',
-        getDefaults: () => ({ foo: 'bar' }),
-      },
-    ]);
+    let entity = new Entity(0, { identity: { foo: 'bar' } });
 
     expect(entity.components.identity).toEqual({ foo: 'bar' });
   });
 
-  it.only('should support default data', () => {
-    let entity = new Entity(null, [
-      {
-        id: 'identity',
-        getDefaults: () => ({
-          name: 'Testing!',
-          description: 'This is a test.',
-        }),
+  it('should support default data', () => {
+    let entity = new Entity(null, {
+      identity: {
+        name: 'Testing!',
+        description: 'This is a test.',
       },
-    ]);
-
+    });
     expect(entity.components.identity).toEqual({
       name: 'Testing!',
       description: 'This is a test.',

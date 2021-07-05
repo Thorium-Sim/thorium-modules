@@ -1,3 +1,4 @@
+import { Component, ComponentId } from './component';
 import ECS from './ecs';
 import Entity from './entity';
 
@@ -8,25 +9,27 @@ import { fastSplice } from './utils';
  * This class is not meant to be used directly and should be sub-classed to
  * define specific logic.
  */
-class System {
+class System<
+  Components extends Record<ComponentId, Component<Record<string, unknown>>>
+> {
   /**
    * Frequency of update execution, a frequency of `1` run the system every
    * update, `2` will run the system every 2 updates, ect.
    */
   frequency: number;
 
-  ecs!: ECS;
+  ecs!: ECS<Components>;
   /**
    * Entities of the system.
    */
-  entities: Entity[] = [];
+  entities: Entity<Components>[] = [];
   constructor(frequency: number = 1) {
     this.frequency = frequency;
   }
   /**
    * Add an entity to the system entities.
    */
-  addEntity(entity: Entity) {
+  addEntity(entity: Entity<Components>) {
     entity.addSystem(this);
     this.entities.push(entity);
 
@@ -38,8 +41,8 @@ class System {
    *
    * @param  {Entity} entity Reference of the entity to remove.
    */
-  removeEntity(entity: Entity) {
-    let index = this.entities.findIndex(e => e.id === entity.id);
+  removeEntity(entity: Entity<Components>) {
+    let index = this.entities.findIndex((e) => e.id === entity.id);
     if (index !== -1) {
       entity.removeSystem(this);
       fastSplice(this.entities, index, 1);
@@ -83,22 +86,22 @@ class System {
    * Abstract method to subclass. Should return true if the entity is eligible
    * to the system, false otherwise.
    */
-  test(_entity: Entity) {
+  test(_entity: Entity<Components>) {
     return false;
   }
   /**
    * Abstract method to subclass. Called when an entity is added to the system.
    */
-  enter(_entity: Entity) {}
+  enter(_entity: Entity<Components>) {}
   /**
    * Abstract method to subclass. Called when an entity is removed from the system.
    */
-  exit(_entity: Entity) {}
+  exit(_entity: Entity<Components>) {}
   /**
    * Abstract method to subclass. Called for each entity to update. This is
    * the only method that should actual mutate entity state.
    */
-  update(_entity: Entity, _elapsedMs: number) {}
+  update(_entity: Entity<Components>, _elapsedMs: number) {}
 }
 // jshint unused:true
 

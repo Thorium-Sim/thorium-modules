@@ -7,8 +7,8 @@ import {
   JSONMessageReviver,
   SendMessage,
 } from './common';
-import { isObject, ServerSocket } from './utils';
-
+import { isObject } from './utils';
+import { NetConnectorSocket } from '@thorium-sim/types';
 interface ExecutionArgs {
   type: string;
   context: ExecutionContextValue;
@@ -169,7 +169,7 @@ export interface Server<E = undefined> {
    * promise will resolve once the internal cleanup is complete.
    */
   opened(
-    socket: ServerSocket,
+    socket: NetConnectorSocket,
     ctxExtra: E
   ): (code: number, reason: string) => Promise<void>; // closed
 }
@@ -190,10 +190,8 @@ export interface Context<E = unknown> {
    */
   readonly acknowledged: boolean;
   /** The parameters passed during the connection initialization. */
-  readonly _connectionParams?: Readonly<Record<string, unknown>>;
-  readonly socket: Omit<ServerSocket, 'send'> & {
-    send: (data: SendMessage) => void;
-  };
+  readonly connectionParams?: Readonly<Record<string, unknown>>;
+  readonly socket: NetConnectorSocket;
   /**
    * An extra field where you can store your own context values
    * to pass between callbacks.
@@ -227,14 +225,7 @@ export function makeServer<E = unknown>(options: ServerOptions<E>): Server<E> {
       const ctx: Context<E> = {
         connectionInitReceived: false,
         acknowledged: false,
-        socket: {
-          protocol: socket.protocol,
-          close: socket.close,
-          onMessage: socket.onMessage,
-          send: async (data: SendMessage) => {
-            await socket.send(stringifyMessage(data, replacer));
-          },
-        },
+        socket,
         extra,
       };
 
